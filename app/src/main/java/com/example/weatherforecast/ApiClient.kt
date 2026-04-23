@@ -45,7 +45,7 @@ object ApiClient {
     }
 
     suspend fun getWeatherForecast(lat: Double, lon: Double): WeatherResponse = withContext(Dispatchers.IO) {
-        val url = URL("https://api.open-meteo.com/v1/forecast?latitude=$lat&longitude=$lon&hourly=temperature_2m&forecast_days=16")
+        val url = URL("https://api.open-meteo.com/v1/forecast?latitude=$lat&longitude=$lon&hourly=temperature_2m,weather_code&forecast_days=16")
         val connection = url.openConnection() as HttpURLConnection
         connection.connectTimeout = 10_000
         connection.readTimeout = 10_000
@@ -59,10 +59,18 @@ object ApiClient {
 
         val timeArray = hourlyObj.getJSONArray("time")
         val tempArray = hourlyObj.getJSONArray("temperature_2m")
+        val weatherCodeArray = hourlyObj.getJSONArray("weather_code")
 
         val times = (0 until timeArray.length()).map { timeArray.getString(it) }
         val temps = (0 until tempArray.length()).map { tempArray.getDouble(it) }
+        val codes = (0 until weatherCodeArray.length()).map { weatherCodeArray.getInt(it) }
 
-        WeatherResponse(hourly = HourlyData(time = times, temperature = temps))
+        WeatherResponse(
+            hourly = HourlyData(
+                time = times,
+                temperature = temps,
+                weatherCode = codes
+            )
+        )
     }
 }

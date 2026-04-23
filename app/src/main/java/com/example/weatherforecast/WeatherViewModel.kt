@@ -37,8 +37,14 @@ class WeatherViewModel : ViewModel() {
             uiState = ForecastUiState.Loading
             try {
                 val response = ApiClient.getWeatherForecast(city.latitude, city.longitude)
-                val hourlyList = response.hourly.time.zip(response.hourly.temperature)
-                uiState = ForecastUiState.Success(city.name, hourlyList)
+                val hourlyInfoList = response.hourly.time.indices.map { i ->
+                    HourlyInfo(
+                        time = response.hourly.time[i],
+                        temperature = response.hourly.temperature[i],
+                        weatherCode = response.hourly.weatherCode[i]
+                    )
+                }
+                uiState = ForecastUiState.Success(city.name, hourlyInfoList)
             } catch (e: Exception) {
                 uiState = ForecastUiState.Error("Ошибка загрузки прогноза")
             }
